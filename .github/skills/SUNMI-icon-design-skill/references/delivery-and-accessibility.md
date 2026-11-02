@@ -1,0 +1,121 @@
+# 交付与无障碍
+
+## SVG 交付契约
+
+Fill 或单态图标推荐结构：
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <path fill="currentColor" d="..."/>
+</svg>
+```
+
+Line 图标必须使用可粘贴到 Figma 的双层结构：
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <g id="Original" display="none">
+    <path
+      d="..."
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="butt"
+      stroke-linejoin="miter"
+    />
+  </g>
+  <g id="Outlined">
+    <path fill="currentColor" d="..."/>
+  </g>
+</svg>
+```
+
+要求：
+
+- `viewBox` 必须是 `0 0 24 24`。
+- 24×24 是固定画布；内部可见几何必须符合[光学盒规则](./optical-sizing.md)，不能通过修改 `viewBox` 校正大小。
+- 可以保留 `width="24"` 和 `height="24"` 作为默认尺寸，也可以由组件层设置。
+- 路径使用 `currentColor`，不要写死黑色。
+- `*-line.svg` 必须且只能有两个顶层图形组，顺序为 `Original`、`Outlined`；使用 `id` 保证粘贴到 Figma 后得到同名图层。
+- `Original` 必须使用属性 `display="none"` 默认隐藏，保留可编辑 stroke，并显式写出 `stroke-width`、`stroke-linecap` 和 `stroke-linejoin`。
+- `Outlined` 必须默认显示，只包含已轮廓化的填充几何，不含可见 stroke；产品渲染只依赖这一层。
+- 两层单独显示时必须具有相同的视觉轮廓、端点、孔洞、交叉关系和联合包围盒。
+- Fill 与无 Line 语义的单态图标继续使用填充结构，不添加空的 `Original`。
+- 根节点不要使用 `preserveAspectRatio="none"`。
+- 不包含 `style`、`script`、`image`、`text`、`foreignObject`、滤镜或动画。
+- 除隐藏的 `Original` 外不使用 stroke；任何实际显示的 stroke 都必须先扩展到 `Outlined`。
+- 保持透明背景。
+- 不在文件中保留临时 Figma 下载 URL、编辑器元数据或除 `Original` / `Outlined` 外的无意义图层。
+- 每个组内可以合并路径，但不要为了单路径破坏孔洞、填充规则或可维护性。
+
+Fill/单态参考骨架见[icon-template.svg](../assets/icon-template.svg)，Line 参考骨架见[icon-template-line.svg](../assets/icon-template-line.svg)。
+
+## 颜色与状态
+
+- 默认颜色由 `currentColor` 继承。
+- Hover、active、selected、disabled 和 danger 状态由组件或 CSS 控制，不复制不同颜色的 SVG。
+- 双层颜色只有在产品规范明确要求时才引入；不要从该单色体系自行扩展。
+- 禁用态通过颜色/透明度表达时仍需满足产品的对比度规范。
+
+## 可访问名称
+
+### 装饰性图标
+
+- 对辅助文字旁的重复图标使用 `aria-hidden="true"`。
+- 不添加无意义的 `title="icon"`。
+
+### 传达信息的图标
+
+- 图标按钮必须在调用处拥有可访问名称，例如 `aria-label="删除"`。
+- 状态图标要让状态文本可被辅助技术读取。
+- SVG 内的 `<title>` 只有在组件规范明确管理唯一 ID 时使用；通常由按钮或组件层提供名称更可靠。
+- 不依赖颜色或 Line/Fill 变化作为唯一状态信号。
+
+## 尺寸与点击区域
+
+- 24×24 是设计画布，不等于点击区域。
+- Web/桌面端的实际点击目标按产品规范设置；触屏通常至少使用 44×44 或 48×48。
+- 图标在点击区域中按视觉中心对齐。
+- 缩放必须等比，不覆盖 SVG 根尺寸为非等比 `100% × 100%`。
+- 至少检查 16、20、24、32 px；小于 16 px 时应设计专用小尺寸版本，而不是无限缩小。
+
+## RTL
+
+需要镜像：
+
+- 后退/前进
+- 上一步/下一步
+- 文本缩进等与阅读方向直接相关的操作
+
+通常不镜像：
+
+- 播放
+- 下载/上传
+- 外部链接
+- 指南针、时钟、品牌 Logo
+- 表达固定物理方向的图标
+
+镜像应在组件层完成，避免复制第二份 SVG；但名称和测试必须能说明 RTL 行为。
+
+## Figma 交付
+
+- 使用 24×24 组件母版。
+- 叠加[图标盒模板](../assets/icon-box-template.svg)，为组件记录方形、竖向、横向或圆形盒型。
+- 导出前隐藏或移除光学盒辅助图层，不把辅助底色写入图标资产。
+- Line SVG 粘贴后确认存在两个同级图层：隐藏的 `Original` 可编辑描边层和可见的 `Outlined` 轮廓填充层。
+- 分别单独显示 `Original` 与 `Outlined`，确认二者轮廓和包围盒重合；正常交付状态只显示 `Outlined`。
+- Line/Fill 作为同一组件集的 `Style` 变体。
+- 保持组件原点、边界和命名一致。
+- 将颜色绑定到可继承的前景色变量；若源文件尚无变量，至少不要在多个图层中散落不同黑色值。
+- 为组件写清语义、禁用场景和 RTL 行为。
+- 目录板中的实例只引用组件，不复制路径。
+- 更新组件后重新核对实例数量和变体配对。
+
+## 代码接入
+
+- 优先复用项目已有 Icon 组件和尺寸 token。
+- 不为单个图标引入新的渲染库。
+- 不把 SVG 临时 URL 当作运行时资源。
+- 若内联 SVG，保留 `viewBox`，由组件传入 `size`、`className`、可访问名称和颜色。
+- 若使用外部 `<img>`，`currentColor` 不会自然继承；需确认项目的着色策略，不能静默退化为固定黑色。
+- 动态图标名称必须有类型约束或白名单，避免运行时请求不存在的资产。

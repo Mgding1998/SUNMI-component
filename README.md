@@ -2,6 +2,26 @@
 
 商米 React 组件库。
 
+## SUNMI 图标设计 Skill
+
+仓库内置 [`SUNMI-icon-design-skill`](./.github/skills/SUNMI-icon-design-skill/SKILL.md)，用于按 SUNMI 视觉规范设计、重绘、校正和审查 24×24 单色图标。
+
+Line SVG 使用适合粘贴到 Figma 的双层交付结构：
+
+- `Original`：默认隐藏，保留可编辑的 `currentColor` 描边、线宽、端点和连接方式。
+- `Outlined`：默认显示，使用 `currentColor` 填充的轮廓化路径，负责产品实际渲染。
+
+运行 Skill 自带校验：
+
+```bash
+python3 -m unittest discover \
+  -s .github/skills/SUNMI-icon-design-skill/scripts \
+  -p 'test_*.py' -v
+
+python3 .github/skills/SUNMI-icon-design-skill/scripts/validate_svg.py \
+  path/to/icons --require-pairs --strict
+```
+
 ## Button
 
 Button 根据 Figma `Button 按钮` 组件集实现，支持：
